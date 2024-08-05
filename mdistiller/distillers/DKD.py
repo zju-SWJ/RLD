@@ -9,7 +9,7 @@ def normalize(logit):
     stdv = logit.std(dim=-1, keepdims=True)
     return (logit - mean) / (1e-7 + stdv)
 
-def dkd_loss(logits_student_in, logits_teacher_in, target, alpha, beta, temperature, logit_stand, loss_type):
+def dkd_loss(logits_student_in, logits_teacher_in, target, alpha, beta, temperature, logit_stand):
     logits_student = normalize(logits_student_in) if logit_stand else logits_student_in
     logits_teacher = normalize(logits_teacher_in) if logit_stand else logits_teacher_in
 
@@ -19,20 +19,12 @@ def dkd_loss(logits_student_in, logits_teacher_in, target, alpha, beta, temperat
     pred_teacher = F.softmax(logits_teacher / temperature, dim=1)
     pred_student = cat_mask(pred_student, gt_mask, other_mask)
     pred_teacher = cat_mask(pred_teacher, gt_mask, other_mask)
-    if loss_type == 'kl':
-        log_pred_student = torch.log(pred_student)
-        tckd_loss = F.kl_div(log_pred_student, pred_teacher, reduction='batchmean') * (temperature**2)
-    elif loss_type == 'mse':
-        tckd_loss = F.mse_loss(pred_student, pred_teacher)
+    log_pred_student = torch.log(pred_student)
+    tckd_loss = F.kl_div(log_pred_student, pred_teacher, reduction='batchmean') * (temperature**2)
     
-    if loss_type == 'kl':
-        pred_teacher_part2 = F.softmax(logits_teacher / temperature - 1000.0 * gt_mask, dim=1)
-        log_pred_student_part2 = F.log_softmax(logits_student / temperature - 1000.0 * gt_mask, dim=1)
-        nckd_loss = F.kl_div(log_pred_student_part2, pred_teacher_part2, reduction='batchmean') * (temperature**2)
-    elif loss_type == 'mse':
-        masked_teacher = torch.where(gt_mask, torch.zeros_like(logits_teacher), logits_teacher)
-        masked_student = torch.where(gt_mask, torch.zeros_like(logits_student), logits_student)
-        nckd_loss = F.mse_loss(masked_student, masked_teacher)
+    pred_teacher_part2 = F.softmax(logits_teacher / temperature - 1000.0 * gt_mask, dim=1)
+    log_pred_student_part2 = F.log_softmax(logits_student / temperature - 1000.0 * gt_mask, dim=1)
+    nckd_loss = F.kl_div(log_pred_student_part2, pred_teacher_part2, reduction='batchmean') * (temperature**2)
     
     return alpha * tckd_loss + beta * nckd_loss
 
@@ -67,7 +59,6 @@ class DKD(Distiller):
         self.temperature = cfg.DKD.T
         self.warmup = cfg.DKD.WARMUP
         self.logit_stand = cfg.EXPERIMENT.LOGIT_STAND
-        self.loss_type = cfg.DKD.LOSS_TYPE
 
     def forward_train(self, image, target, **kwargs):
         logits_student, _ = self.student(image)
@@ -84,7 +75,6 @@ class DKD(Distiller):
             self.beta,
             self.temperature,
             self.logit_stand,
-            self.loss_type,
         )
         losses_dict = {
             "loss_ce": loss_ce,

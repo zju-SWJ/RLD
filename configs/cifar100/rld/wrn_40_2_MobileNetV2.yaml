@@ -1,15 +1,15 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "my,res56,res20"
+  TAG: "rld,wrn_40_2,mv2"
   PROJECT: "cifar100_baselines"
 DISTILLER:
-  TYPE: "MY"
-  TEACHER: "resnet56"
-  STUDENT: "resnet20"
+  TYPE: "RLD"
+  TEACHER: "wrn_40_2"
+  STUDENT: "MobileNetV2"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240
-  LR: 0.05
+  LR: 0.01
   LR_DECAY_STAGES: [150, 180, 210]
   LR_DECAY_RATE: 0.1
   WEIGHT_DECAY: 0.0005

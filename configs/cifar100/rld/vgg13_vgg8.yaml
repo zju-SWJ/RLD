@@ -1,11 +1,11 @@
 EXPERIMENT:
   NAME: ""
-  TAG: "my,res32x4,wrn_16_2"
+  TAG: "rld,vgg13,vgg8"
   PROJECT: "cifar100_baselines"
 DISTILLER:
-  TYPE: "MY"
-  TEACHER: "resnet32x4"
-  STUDENT: "wrn_16_2"
+  TYPE: "RLD"
+  TEACHER: "vgg13"
+  STUDENT: "vgg8"
 SOLVER:
   BATCH_SIZE: 64
   EPOCHS: 240

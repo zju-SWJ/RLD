@@ -14,7 +14,7 @@ from .Sonly import Sonly
 from .VID import VID
 from .ReviewKD import ReviewKD
 from .DKD import DKD
-from .MY import MY
+from .RLD import RLD
 from .SWAP import SWAP
 from .REVISION import REVISION
 from .RC import RC
@@ -38,7 +38,7 @@ distiller_dict = {
     "VID": VID,
     "REVIEWKD": ReviewKD,
     "DKD": DKD,
-    "MY": MY,
+    "RLD": RLD,
     "SWAP": SWAP,
     "REVISION": REVISION,
     "RC": RC,

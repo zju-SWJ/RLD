@@ -41,7 +41,7 @@ verify_dict = {
     "rc": "RC",
     "mlkd": "MLKD",
     "mlkd_noaug": "MLKD_NOAUG",
-    "my": "MY",
+    "rld": "RLD",
     "vanilla": "NONE",
     "swap": "SWAP",
     "revision": "REVISION",
@@ -167,7 +167,7 @@ if __name__ == "__main__":
         cfg.EXPERIMENT.AUG = True
         cfg.EXPERIMENT.TAG += ',aug'
 
-    if args.logit_stand and cfg.DISTILLER.TYPE in ['KD', 'DKD', 'MLKD', 'MY', 'SWAP', 'RC', 'MLKD_NOAUG']:
+    if args.logit_stand and cfg.DISTILLER.TYPE in ['KD', 'DKD', 'MLKD', 'RLD', 'SWAP', 'RC', 'MLKD_NOAUG']:
         cfg.EXPERIMENT.LOGIT_STAND = True
         cfg.EXPERIMENT.TAG += ',stand'
         if cfg.DISTILLER.TYPE == 'KD' or cfg.DISTILLER.TYPE == 'SWAP' or cfg.DISTILLER.TYPE == 'MLKD' or cfg.DISTILLER.TYPE == 'MLKD_NOAUG':
@@ -177,45 +177,28 @@ if __name__ == "__main__":
             cfg.DKD.ALPHA = cfg.DKD.ALPHA * args.kd_weight
             cfg.DKD.BETA = cfg.DKD.BETA * args.kd_weight
             cfg.DKD.T = args.base_temp
-        elif cfg.DISTILLER.TYPE == 'MY':
-            cfg.MY.ALPHA = cfg.MY.ALPHA * args.kd_weight
-            cfg.MY.BETA = cfg.MY.BETA * args.kd_weight
-            cfg.MY.T = args.base_temp
-            cfg.MY.ALPHA_T = args.base_temp
+        elif cfg.DISTILLER.TYPE == 'RLD':
+            cfg.RLD.ALPHA = cfg.RLD.ALPHA * args.kd_weight
+            cfg.RLD.BETA = cfg.RLD.BETA * args.kd_weight
+            cfg.RLD.T = args.base_temp
+            cfg.RLD.ALPHA_T = args.base_temp
         elif cfg.DISTILLER.TYPE == 'RC':
             cfg.RC.KD_WEIGHT = cfg.RC.KD_WEIGHT * args.kd_weight
             cfg.RC.RC_WEIGHT = cfg.RC.RC_WEIGHT * args.kd_weight
             cfg.RC.T = args.base_temp
     
-    if cfg.DISTILLER.TYPE in ['MY']:
-        assert cfg.MY.METHOD in ['both_excl', 'both_incl', 'ge_excl', 'ge_incl', 'g_incl']
-        assert cfg.MY.LOSS_TYPE in ['kl', 'mse']
-        cfg.EXPERIMENT.TAG += ',' + cfg.MY.LOSS_TYPE
+    if cfg.DISTILLER.TYPE in ['RLD']:
         if args.same_t:
-            cfg.MY.ALPHA_T = cfg.MY.T
-        if cfg.MY.LOSS_TYPE == 'kl':
-            cfg.EXPERIMENT.TAG += ',at=' + str(cfg.MY.ALPHA_T)
-            cfg.EXPERIMENT.TAG += ',t=' + str(cfg.MY.T)
-            cfg.EXPERIMENT.TAG += ',alpha=' + str(cfg.MY.ALPHA)
-            cfg.EXPERIMENT.TAG += ',beta=' + str(cfg.MY.BETA)
-            #cfg.EXPERIMENT.TAG += ',' + str(cfg.MY.GAMMA)
-            cfg.EXPERIMENT.TAG += ',' + cfg.MY.METHOD
-        elif cfg.MY.LOSS_TYPE == 'mse':
-            cfg.EXPERIMENT.TAG += ',' + str(cfg.MY.ALPHA)
-            cfg.EXPERIMENT.TAG += ',' + str(cfg.MY.BETA)
-            #cfg.EXPERIMENT.TAG += ',' + str(cfg.MY.GAMMA)
-            cfg.EXPERIMENT.TAG += ',' + cfg.MY.METHOD
+            cfg.RLD.ALPHA_T = cfg.RLD.T
+        cfg.EXPERIMENT.TAG += ',at=' + str(cfg.RLD.ALPHA_T)
+        cfg.EXPERIMENT.TAG += ',t=' + str(cfg.RLD.T)
+        cfg.EXPERIMENT.TAG += ',alpha=' + str(cfg.RLD.ALPHA)
+        cfg.EXPERIMENT.TAG += ',beta=' + str(cfg.RLD.BETA)
 
     if cfg.DISTILLER.TYPE in ['DKD']:
-        assert cfg.DKD.LOSS_TYPE in ['kl', 'mse']
-        cfg.EXPERIMENT.TAG += ',' + cfg.DKD.LOSS_TYPE
-        if cfg.DKD.LOSS_TYPE == 'kl':
-            cfg.EXPERIMENT.TAG += ',' + str(cfg.DKD.T)
-            cfg.EXPERIMENT.TAG += ',' + str(cfg.DKD.ALPHA)
-            cfg.EXPERIMENT.TAG += ',' + str(cfg.DKD.BETA)
-        elif cfg.DKD.LOSS_TYPE == 'mse':
-            cfg.EXPERIMENT.TAG += ',' + str(cfg.DKD.ALPHA)
-            cfg.EXPERIMENT.TAG += ',' + str(cfg.DKD.BETA)
+        cfg.EXPERIMENT.TAG += ',' + str(cfg.DKD.T)
+        cfg.EXPERIMENT.TAG += ',' + str(cfg.DKD.ALPHA)
+        cfg.EXPERIMENT.TAG += ',' + str(cfg.DKD.BETA)
 
     cfg.freeze()
     main(cfg, args.resume, args.opts)
